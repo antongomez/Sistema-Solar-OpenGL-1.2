@@ -38,15 +38,16 @@ int height = 650;
 
 // Aqui solo incluimos hasta listarender
 objeto sol = { 1.0f, 1.0f, 0.0f, 0, 0, 0, 1, 0, 100, 0 };
-objeto mercurio = { 0.7f, 0.7f, 0.7f, 200, 8, 0, 10, 0, 20, 0 };
-objeto venus = { 0.9f, 0.5f, 0.0f, 350, 6, 0, 10, 0, 40, 0 };
-objeto tierra = { 0.0f, 1.0f, 1.0f, 500, 5, 0, 15, 0, 40, 0 };
-objeto luna = { 1.0f, 1.0f, 1.0f, 100, 2, 0, 0, 0, 10, 0 };
-objeto marte = { 1.0f, 0.0f, 0.0f, 800, 2, 0, 10, 0, 30, 0 };
+objeto mercurio = { 0.7f, 0.7f, 0.7f, 200, 2.0f, 0, 10, 0, 20, 0 };
+objeto venus = { 0.9f, 0.5f, 0.0f, 350, 3.0f, 0, 10, 0, 40, 0 };
+objeto tierra = { 0.0f, 1.0f, 1.0f, 500, 4.0f, 0, 15, 0, 40, 0 };
+objeto luna = { 1.0f, 1.0f, 1.0f, 100, 1.0f, 0, 0, 0, 10, 0 };
+objeto iss = { 1.0f, 1.0f, 1.0f, 50, 1.5f, 0, 0, 0, 4, 0 };
+objeto marte = { 1.0f, 0.0f, 0.0f, 800, 3.0f, 0, 10, 0, 30, 0 };
 objeto jupiter = { 0.4f, 0.4f, 0.4f, 1000, 4, 0, 8, 0, 70, 0 };
 objeto saturno = { 0.6f, 0.6f, 0.8f, 1200, 2, 0, 10, 0, 60, 0 };
-objeto urano = { 1.0f, 0.0f, 0.0f, 1400, 2, 0, 10, 0, 50, 0 };
-objeto neptuno = { 1.0f, 0.0f, 0.0f, 1500, 2, 0, 10, 0, 15, 0 };
+objeto urano = { 1.0f, 0.0f, 0.0f, 1400, 4, 0, 10, 0, 50, 0 };
+objeto neptuno = { 1.0f, 0.0f, 0.0f, 1500, 6, 0, 10, 0, 15, 0 };
 
 camara = 1;
 
@@ -141,6 +142,7 @@ void myMovimiento(int i) {
 	moverObjeto(&venus);
 	moverObjeto(&tierra);
 	moverObjeto(&luna);
+	moverObjeto(&iss);
 	moverObjeto(&marte);
 	moverObjeto(&jupiter);
 	moverObjeto(&saturno);
@@ -250,6 +252,7 @@ int main(int argc, char** argv) {
 	sol.listarender = listarender;
 	mercurio.listarender = listarender;
 	tierra.listarender = listarender;
+	iss.listarender = listarender;
 	luna.listarender = listarender;
 	marte.listarender = listarender;
 	venus.listarender = listarender;
@@ -269,11 +272,13 @@ int main(int argc, char** argv) {
 	sol.satelites[7] = &neptuno;
 	sol.num_sat = 8;
 	tierra.satelites[0] = &luna;
-	tierra.num_sat = 1;
+	tierra.satelites[1] = &iss;
+	tierra.num_sat = 2;
 
 	mercurio.num_sat = 0;
 	venus.num_sat = 0;
 	luna.num_sat = 0;
+	iss.num_sat = 0;
 	marte.num_sat = 0;
 	jupiter.num_sat = 0;
 	saturno.num_sat = 0;
