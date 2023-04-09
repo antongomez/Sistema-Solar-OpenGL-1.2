@@ -2,3 +2,5 @@
 [Dd]ebug/
 
 *vcxproj*
+
+*.dll
