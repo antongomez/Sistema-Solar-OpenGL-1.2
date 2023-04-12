@@ -8,11 +8,6 @@
 #include "esfera_12.h"
 
 
-#define GL_PI 3.14f		// NO SE PARA QUE VALE ESTO
-
-// Angulos de rotacion
-static GLfloat xRot = 0.0f;		// ESTO YO CREO QUE TAMPOCO SIRVE PARA NADA
-static GLfloat yRot = 0.0f;
 
 int width = 650;
 int height = 650;
@@ -38,16 +33,16 @@ int height = 650;
 
 // Aqui solo incluimos hasta listarender
 objeto sol = { 1.0f, 1.0f, 0.0f, 0, 0, 0, 1, 0, 100, 0 };
-objeto mercurio = { 0.7f, 0.7f, 0.7f, 200, 2.0f, 0, 10, 0, 20, 0 };
-objeto venus = { 0.9f, 0.5f, 0.0f, 350, 3.0f, 0, 10, 0, 40, 0 };
-objeto tierra = { 0.0f, 1.0f, 1.0f, 500, 4.0f, 0, 15, 0, 40, 0 };
-objeto luna = { 1.0f, 1.0f, 1.0f, 100, 1.0f, 0, 0, 0, 10, 0 };
-objeto iss = { 1.0f, 1.0f, 1.0f, 50, 1.5f, 0, 0, 0, 4, 0 };
-objeto marte = { 1.0f, 0.0f, 0.0f, 800, 3.0f, 0, 10, 0, 30, 0 };
-objeto jupiter = { 0.4f, 0.4f, 0.4f, 1000, 4, 0, 8, 0, 70, 0 };
-objeto saturno = { 0.6f, 0.6f, 0.8f, 1200, 2, 0, 10, 0, 60, 0 };
-objeto urano = { 1.0f, 0.0f, 0.0f, 1400, 4, 0, 10, 0, 50, 0 };
-objeto neptuno = { 1.0f, 0.0f, 0.0f, 1500, 6, 0, 10, 0, 15, 0 };
+objeto mercurio = { 0.7f, 0.7f, 0.7f, 200, 5, 0, 6, 0, 20, 0 };
+objeto venus = { 0.9f, 0.5f, 0.0f, 350, 4.5, 0, 6, 0, 40, 0 };
+objeto tierra = { 0.0f, 1.0f, 0.75f, 500, 4, 0, 5, 0, 40, 0 };
+objeto luna = { 1.0f, 1.0f, 1.0f, 100, 3, 0, 0, 0, 10, 0 };
+objeto iss = { 1.0f, 1.0f, 1.0f, 60, 4, 0, 0, 0, 3, 0 };
+objeto marte = { 1.0f, 0.0f, 0.0f, 700, 2.5, 0, 4, 0, 30, 0 };
+objeto jupiter = { 0.5f, 0.2f, 0.0f, 900, 2, 0, 3, 0, 70, 0 };
+objeto saturno = { 1.0f, 0.7f, 0.0f, 1100, 1.5, 0, 3, 0, 60, 0 };
+objeto urano = { 0.0f, 1.0f, 1.0f, 1300, 1, 0, 3, 0, 50, 0 };
+objeto neptuno = { 0.0f, 0.0f, 1.0f, 1500, 0.5, 0, 3, 0, 50, 0 };
 
 camara = 1;
 
@@ -58,24 +53,39 @@ void dibujarObjeto(objeto* obj) {
 		// Dibujamos la orbita
 		glColor3f(1.0f, 1.0f, 1.0f);
 		glPushMatrix();
-		glRotatef(90.0, 1.0, 0.0, 0.0);
-		glutWireTorus(0.5f, obj->distancia, 1, 100);
+			glRotatef(90.0, 1.0, 0.0, 0.0);
+			glScalef(1.0, 1.0, 0.1);
+			glutWireTorus(0.5f, obj->distancia, 10, 100);
 		glPopMatrix();
 	}
 
 	// Dibujamos el objeto
 	glColor3f(obj->r, obj->g, obj->b);
 	glPushMatrix();
-	glRotatef(obj->angulo_trans, 0.0, 1.0, 0.0);
-	glTranslatef(obj->distancia, 0.0, 0.0);
-	glPushMatrix();
-	glRotatef(obj->angulo_rot, 0, 1, 0);
-	glScalef(obj->tamano, obj->tamano, obj->tamano);
-	glCallList(obj->listarender);
-	glPopMatrix();
-	for (i = 0; i < obj->num_sat; i++) {
-		dibujarObjeto((obj->satelites)[i]);
-	}
+		glRotatef(obj->angulo_trans, 0.0, 1.0, 0.0);
+		glTranslatef(obj->distancia, 0.0, 0.0);
+		glPushMatrix();
+			glRotatef(obj->angulo_rot, 0, 1, 0);
+			glScalef(obj->tamano, obj->tamano, obj->tamano);
+			glCallList(obj->listarender);
+		glPopMatrix();
+		if (obj->distancia == saturno.distancia) {
+			// Anillos (solo Saturno)
+			//glColor3f(1.0f, 1.0f, 1.0f);
+			glPushMatrix();
+				glRotatef(45.0, 0.0, 0.0, 1.0);
+				glRotatef(90.0, 1.0, 0.0, 0.0);
+				glutWireTorus(0.5f, 90, 1, 100);
+				glutWireTorus(0.5f, 95, 1, 100);
+				glutWireTorus(0.5f, 100, 1, 100);
+				glutWireTorus(0.5f, 105, 1, 100);
+				glutWireTorus(0.5f, 110, 1, 100);
+				glutWireTorus(0.5f, 115, 1, 100);
+			glPopMatrix();
+		}
+		for (i = 0; i < obj->num_sat; i++) {
+			dibujarObjeto((obj->satelites)[i]);
+		}
 	glPopMatrix();
 }
 
@@ -99,10 +109,28 @@ void myDisplay(void) {
 		myTelescopio(tierra.distancia, tierra.angulo_trans, marte.distancia, marte.angulo_trans, width, height);
 		break;
 	case 5:
-		myTelescopio2(tierra.distancia, tierra.angulo_trans, luna.distancia, luna.angulo_trans, width, height);
+		myTelescopio(tierra.distancia, tierra.angulo_trans, jupiter.distancia, jupiter.angulo_trans, width, height);
 		break;
 	case 6:
+		myTelescopio(tierra.distancia, tierra.angulo_trans, saturno.distancia, saturno.angulo_trans, width, height);
+		break;
+	case 7:
+		myTelescopio(tierra.distancia, tierra.angulo_trans, urano.distancia, urano.angulo_trans, width, height);
+		break;
+	case 8:
+		myTelescopio(tierra.distancia, tierra.angulo_trans, neptuno.distancia, neptuno.angulo_trans, width, height);
+		break;
+	case 9:
+		myTelescopio2(tierra.distancia, tierra.angulo_trans, luna.distancia, luna.angulo_trans, width, height);
+		break;
+	case 10:
+		myTelescopio2(tierra.distancia, tierra.angulo_trans, iss.distancia, iss.angulo_trans, width, height);
+		break;
+	case 11:
 		myTelescopio3(tierra.distancia, tierra.angulo_trans, luna.distancia, luna.angulo_trans, width, height);
+		break;
+	case 12:
+		myTelescopio3(tierra.distancia, tierra.angulo_trans, iss.distancia, iss.angulo_trans, width, height);
 		break;
 	}
 
@@ -135,7 +163,6 @@ void moverObjeto(objeto* obj) {
 }
 
 
-// LE TUVE QUE METER UN INT COMO ARGUMENTO, PORQUE SI NO DABA ERROR EL glutTimerFunc().
 void myMovimiento(int i) {
 	moverObjeto(&sol);
 	moverObjeto(&mercurio);
@@ -175,20 +202,44 @@ void onMenu(int opcion) {
 	case 6:
 		camara = 6;
 		break;
+	case 7:
+		camara = 7;
+		break;
+	case 8:
+		camara = 8;
+		break;
+	case 9:
+		camara = 9;
+		break;
+	case 10:
+		camara = 10;
+		break;
+	case 11:
+		camara = 11;
+		break;
+	case 12:
+		camara = 12;
+		break;
 	}
 	glutPostRedisplay();
 }
 
 void myMenu(void) {
-	int menuFondo;			// Dijo que le cambiemos el nombre
+	int menuFondo;			
 
 	menuFondo = glutCreateMenu(onMenu);
 	glutAddMenuEntry("Voyager", 1);
 	glutAddMenuEntry("Sol desde Tierra", 2);
 	glutAddMenuEntry("Mercurio desde Tierra", 3);
 	glutAddMenuEntry("Marte desde Tierra", 4);
-	glutAddMenuEntry("Luna desde Tierra", 5);
-	glutAddMenuEntry("Tierra desde Luna", 6);
+	glutAddMenuEntry("Jupiter desde Tierra", 5);
+	glutAddMenuEntry("Saturno desde Tierra", 6);
+	glutAddMenuEntry("Urano desde Tierra", 7);
+	glutAddMenuEntry("Neptuno desde Tierra", 8);
+	glutAddMenuEntry("Luna desde Tierra", 9);
+	glutAddMenuEntry("ISS desde Tierra", 10);
+	glutAddMenuEntry("Tierra desde Luna", 11);
+	glutAddMenuEntry("Tierra desde ISS", 12);
 
 
 	glutAttachMenu(GLUT_RIGHT_BUTTON);
@@ -223,7 +274,7 @@ int main(int argc, char** argv) {
 	//Detectar profundidad de objetos y no dibujar caras ocultas
 	glClearDepth(1.0f);
 	glEnable(GL_DEPTH_TEST);
-	//glEnable(GL_CULL_FACE);
+	glEnable(GL_CULL_FACE);
 	//Normalizar las normales
 	glEnable(GL_NORMALIZE);
 

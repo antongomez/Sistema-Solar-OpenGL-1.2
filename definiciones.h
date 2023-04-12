@@ -35,6 +35,11 @@ typedef struct {
 #define DISTANCIA 3000
 #define PI 3.141592
 
+#define NEAR_VOYAGER 1000.0f
+#define FAR_VOYAGER 6000.0f
+#define NEAR_TELESCOPIO 20.0f
+#define FAR_TELESCOPIO 2500.0f
+
 void myCamara(int width, int height);
 
 void myTeclado(unsigned char tras, int x, int y);
