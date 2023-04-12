@@ -75,12 +75,13 @@ void dibujarObjeto(objeto* obj) {
 			glPushMatrix();
 				glRotatef(45.0, 0.0, 0.0, 1.0);
 				glRotatef(90.0, 1.0, 0.0, 0.0);
-				glutWireTorus(0.5f, 90, 1, 100);
-				glutWireTorus(0.5f, 95, 1, 100);
-				glutWireTorus(0.5f, 100, 1, 100);
-				glutWireTorus(0.5f, 105, 1, 100);
-				glutWireTorus(0.5f, 110, 1, 100);
-				glutWireTorus(0.5f, 115, 1, 100);
+				glScalef(1.0, 1.0, 0.1);
+				glutWireTorus(0.5f, 90, 10, 100);
+				glutWireTorus(0.5f, 95, 10, 100);
+				glutWireTorus(0.5f, 100, 10, 100);
+				glutWireTorus(0.5f, 105, 10, 100);
+				glutWireTorus(0.5f, 110, 10, 100);
+				glutWireTorus(0.5f, 115, 10, 100);
 			glPopMatrix();
 		}
 		for (i = 0; i < obj->num_sat; i++) {
