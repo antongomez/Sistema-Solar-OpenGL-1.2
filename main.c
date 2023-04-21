@@ -22,15 +22,17 @@ int height = 650;
 	GLfloat g;
 	GLfloat b;
 
-	float distancia;			// Distancia al objeto que orbita
-	float velocidad_trans;		// Velocidad de translacion
-	float angulo_trans;			// Angulo de translacion
-	float velocidad_rot;		// Velocidad de rotacion
-	float angulo_rot;			// Angulo de rotacion
-	int tamano;					// Tamano del objeto
-	int listarender;			// Lista de renderizacion
-	void* satelites[MAX_SAT];	// Array con sus satelites
-	int num_sat;				// Numero de satelites
+	float distancia;						// Distancia al objeto que orbita
+	float velocidad_trans;					// Velocidad de translacion
+	float angulo_trans;						// Angulo de translacion
+	float velocidad_rot;					// Velocidad de rotacion
+	float angulo_rot;						// Angulo de rotacion
+	int tamano;								// Tamano del objeto
+	int listarender;						// Lista de renderizacion
+	void* satelites[MAX_SAT];				// Array con sus satelites
+	int num_sat;							// Numero de satelites
+	void (*luz_obxecto)(void);				// Funcion que activa a luz que afecta ao obxecto
+	void (*luz_obxecto_desactivar)(void);	// Funcion que desactiva a luz que afecta ao obxecto
 */
 
 
@@ -65,6 +67,10 @@ GLfloat posLuz[] = { 0.0f, 0.0f, 0.0f, 1.0f };
 // a apertura do foco sexa de 180 graos
 GLfloat dirFoco[] = { 1.0f, 1.0f, 1.0f };
 
+// Funcions para activar e desactivar as orbitas
+void luz_ambiente();
+void luz_ambiente_desactivar();
+
 
 // Camara inicial (Voyager)
 camara = 1;
@@ -72,13 +78,9 @@ camara = 1;
 void dibujarObjeto(objeto* obj) {
 	int i;
 
-	// No caso de que o obxecto tenha unha funcion que determina
-	// a iluminacion que afecta ao obxecto chamase
-	if (obj->luz_obxecto != NULL) {
-		obj->luz_obxecto();
-	}
-
-	if (orbitasActivadas()) {
+	if (orbitasActivadas() && (obj->distancia != 0)) {
+		// Activamos a luz das orbitas
+		luz_ambiente();
 		// Dibujamos la orbita
 		glColor3f(1.0f, 1.0f, 1.0f);
 		glPushMatrix();
@@ -86,7 +88,12 @@ void dibujarObjeto(objeto* obj) {
 		glScalef(1.0, 1.0, 0.1);
 		glutWireTorus(0.5f, obj->distancia, 10, 100);
 		glPopMatrix();
+		luz_ambiente_desactivar();
 	}
+
+	// Activamos a iluminacion do obxecto
+	obj->luz_obxecto();
+
 
 	// Dibujamos el objeto
 	glColor3f(obj->r, obj->g, obj->b);
@@ -100,7 +107,6 @@ void dibujarObjeto(objeto* obj) {
 	glPopMatrix();
 	if (obj->distancia == saturno.distancia) {
 		// Anillos (solo Saturno)
-		//glColor3f(1.0f, 1.0f, 1.0f);
 		glPushMatrix();
 		glRotatef(45.0, 0.0, 0.0, 1.0);
 		glRotatef(90.0, 1.0, 0.0, 0.0);
@@ -113,6 +119,9 @@ void dibujarObjeto(objeto* obj) {
 		glPopMatrix();
 
 	}
+
+	// Desactivamos a luz do obxecto
+	obj->luz_obxecto_desactivar();
 
 	for (i = 0; i < obj->num_sat; i++) {
 		dibujarObjeto((obj->satelites)[i]);
@@ -284,17 +293,22 @@ void changeSizec(GLint newWidth, GLint newHeight) {
 	height = newHeight;
 }
 
-// Funcion para activar a luz do sol
-void luz_sol() {
+// Funcion para activar a luz que ilumina as orbitas e o sol
+void luz_ambiente() {
 	glEnable(GL_LIGHT0);
 
 	glEnable(GL_COLOR_MATERIAL);
 	glColorMaterial(GL_FRONT, GL_AMBIENT);
 }
 
-void luz_planeta() {
-	// Habilitamos a luz dos planetas e deshabilitamos a luz do sol
+// Funcion para desactivar a luz que ilumina as orbitas e o sol
+void luz_ambiente_desactivar() {
 	glDisable(GL_LIGHT0);
+}
+
+// Funcion para activar a luz dos planetas
+void luz_planeta() {
+	// Habilitamos a luz dos planetas
 	glEnable(GL_LIGHT1);
 
 	// Definimos o seguimento da cor como propiedade luminosa
@@ -305,6 +319,11 @@ void luz_planeta() {
 	// Definimos as propiedades de brillo metalico
 	glMaterialfv(GL_FRONT, GL_SPECULAR, especularRef);
 	glMateriali(GL_FRONT, GL_SHININESS, 2);
+}
+
+// Funcion para desactivar a luz dos planetas
+void luz_planeta_desactivar() {
+	glDisable(GL_LIGHT1);
 }
 
 
@@ -408,17 +427,31 @@ int main(int argc, char** argv) {
 	neptuno.num_sat = 0;
 
 	// Establecemos as funcions que determinan o
-	// modelo de iluminacion para cada planeta
-	sol.luz_obxecto = luz_sol;
+	// modelo de iluminacion para cada planeta e 
+	// o desactiven
+	sol.luz_obxecto = luz_ambiente;
 	mercurio.luz_obxecto = luz_planeta;
-	venus.luz_obxecto = NULL;
-	luna.luz_obxecto = NULL;
-	iss.luz_obxecto = NULL;
-	marte.luz_obxecto = NULL;
-	jupiter.luz_obxecto = NULL;
-	saturno.luz_obxecto = NULL;
-	urano.luz_obxecto = NULL;
-	neptuno.luz_obxecto = NULL;
+	venus.luz_obxecto = luz_planeta;
+	tierra.luz_obxecto = luz_planeta;
+	luna.luz_obxecto = luz_planeta;
+	iss.luz_obxecto = luz_planeta;
+	marte.luz_obxecto = luz_planeta;
+	jupiter.luz_obxecto = luz_planeta;
+	saturno.luz_obxecto = luz_planeta;
+	urano.luz_obxecto = luz_planeta;
+	neptuno.luz_obxecto = luz_planeta;
+
+	sol.luz_obxecto_desactivar = luz_ambiente_desactivar;
+	mercurio.luz_obxecto_desactivar = luz_planeta_desactivar;
+	venus.luz_obxecto_desactivar = luz_planeta_desactivar;
+	tierra.luz_obxecto_desactivar = luz_planeta_desactivar;
+	luna.luz_obxecto_desactivar = luz_planeta_desactivar;
+	iss.luz_obxecto_desactivar = luz_planeta_desactivar;
+	marte.luz_obxecto_desactivar = luz_planeta_desactivar;
+	jupiter.luz_obxecto_desactivar = luz_planeta_desactivar;
+	saturno.luz_obxecto_desactivar = luz_planeta_desactivar;
+	urano.luz_obxecto_desactivar = luz_planeta_desactivar;
+	neptuno.luz_obxecto_desactivar = luz_planeta_desactivar;
 
 	//Empieza el bucle principal
 	glutMainLoop();

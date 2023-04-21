@@ -6,21 +6,22 @@
 
 typedef struct {
 
-								// Color del objeto en RGB
+	// Color del objeto en RGB
 	GLfloat r;
 	GLfloat g;
 	GLfloat b;
 
-	float distancia;			// Distancia al objeto que orbita
-	float velocidad_trans;		// Velocidad de translacion
-	float angulo_trans;			// Angulo de translacion
-	float velocidad_rot;		// Velocidad de rotacion
-	float angulo_rot;			// Angulo de rotacion
-	int tamano;					// Tamano del objeto
-	int listarender;			// Lista de renderizacion
-	void* satelites[MAX_SAT];	// Array con sus satelites
-	int num_sat;				// Numero de satelites
-	void (*luz_obxecto)(void);	// Funcion que activa a luz que afecta ao obxecto
+	float distancia;						// Distancia al objeto que orbita
+	float velocidad_trans;					// Velocidad de translacion
+	float angulo_trans;						// Angulo de translacion
+	float velocidad_rot;					// Velocidad de rotacion
+	float angulo_rot;						// Angulo de rotacion
+	int tamano;								// Tamano del objeto
+	int listarender;						// Lista de renderizacion
+	void* satelites[MAX_SAT];				// Array con sus satelites
+	int num_sat;							// Numero de satelites
+	void (*luz_obxecto)(void);				// Funcion que activa a luz que afecta ao obxecto
+	void (*luz_obxecto_desactivar)(void);	// Funcion que desactiva a luz que afecta ao obxecto
 
 } objeto;
 

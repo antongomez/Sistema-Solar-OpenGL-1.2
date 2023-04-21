@@ -16,7 +16,7 @@ float distancia = DISTANCIA;
 
 
 void myCamara(int width, int height) {
-		
+
 	//Configuración de la matriz de proyeccion
 	glMatrixMode(GL_PROJECTION);
 	//La ponemos a uno
@@ -24,7 +24,7 @@ void myCamara(int width, int height) {
 
 	// Si el plano near lo situamos más lejos, no se ve neptuno si situamos la camara en el plano de las orbitas
 	gluPerspective(45.0, (GLfloat)width / (GLfloat)height, NEAR_VOYAGER, FAR_VOYAGER);
-	gluLookAt(((float)distancia*(float) sin(alpha)*cos(beta)),((float)distancia*(float) sin(beta)), ((float)distancia*cos(alpha)*cos(beta)), 0,0,0,0,cos(beta), 0);
+	gluLookAt(((float)distancia * (float)sin(alpha) * cos(beta)), ((float)distancia * (float)sin(beta)), ((float)distancia * cos(alpha) * cos(beta)), 0, 0, 0, 0, cos(beta), 0);
 
 }
 
@@ -32,8 +32,8 @@ void myTelescopio(float distancia, float angulo, float distancia_obj, float angu
 
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
-	gluPerspective(45.0, (GLfloat)width/(GLfloat)height, NEAR_TELESCOPIO, FAR_TELESCOPIO);
-	gluLookAt(distancia * cos(angulo * PI / 180.0), 0, -1 * distancia * sin(angulo * PI / 180.0), 
+	gluPerspective(45.0, (GLfloat)width / (GLfloat)height, NEAR_TELESCOPIO, FAR_TELESCOPIO);
+	gluLookAt(distancia * cos(angulo * PI / 180.0), 0, -1 * distancia * sin(angulo * PI / 180.0),
 		distancia_obj * cos(angulo_obj * PI / 180.0), 0, -1 * distancia_obj * sin(angulo_obj * PI / 180.0), 0, 1, 0);
 
 }
