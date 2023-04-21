@@ -1,14 +1,17 @@
 #include <windows.h>	// Variables de windows
+
 #include <glut.h>		// Incluimos GLUT
 #include <GL/gl.h>		// Incluimos GL
 #include <gl/glu.h>
+
 #include <stdio.h>
+
 #include <math.h>
+
 #include "definiciones.h"
 #include "esfera_12.h"
 
-
-
+// Variables que determinan o ancho da venta
 int width = 650;
 int height = 650;
 
@@ -44,49 +47,77 @@ objeto saturno = { 1.0f, 0.7f, 0.0f, 1100, 1.5, 0, 3, 0, 60, 0 };
 objeto urano = { 0.0f, 1.0f, 1.0f, 1300, 1, 0, 3, 0, 50, 0 };
 objeto neptuno = { 0.0f, 0.0f, 1.0f, 1500, 0.5, 0, 3, 0, 50, 0 };
 
+// Variables de iluminacion para o sol
+GLfloat ambiente_sol[] = { 1.0f, 1.0f, 1.0f, 1.0f };
+GLfloat difusa_sol[] = { 0, 0, 0, 1.0f };
+GLfloat especular_sol[] = { 0, 0, 0, 1.0f };
+
+// Variables de iluminacion para os planetas
+GLfloat ambiente[] = { 0, 0, 0, 1.0f };
+GLfloat difusa[] = { 1.0f, 1.0f, 1.0f, 1.0f };
+GLfloat especularRef[] = { 1.0f, 1.0f, 1.0f, 1.0f };
+GLfloat especular[] = { 1.0f, 1.0f, 1.0f, 1.0f };
+
+// Variable para definir a posicion do foco
+GLfloat posLuz[] = { 0.0f, 0.0f, 0.0f, 1.0f };
+// Define a direccion da luz, ainda que 
+// non a imos usar porque imos facer que 
+// a apertura do foco sexa de 180 graos
+GLfloat dirFoco[] = { 1.0f, 1.0f, 1.0f };
+
+
+// Camara inicial (Voyager)
 camara = 1;
 
 void dibujarObjeto(objeto* obj) {
 	int i;
 
+	// No caso de que o obxecto tenha unha funcion que determina
+	// a iluminacion que afecta ao obxecto chamase
+	if (obj->luz_obxecto != NULL) {
+		obj->luz_obxecto();
+	}
+
 	if (orbitasActivadas()) {
 		// Dibujamos la orbita
 		glColor3f(1.0f, 1.0f, 1.0f);
 		glPushMatrix();
-			glRotatef(90.0, 1.0, 0.0, 0.0);
-			glScalef(1.0, 1.0, 0.1);
-			glutWireTorus(0.5f, obj->distancia, 10, 100);
+		glRotatef(90.0, 1.0, 0.0, 0.0);
+		glScalef(1.0, 1.0, 0.1);
+		glutWireTorus(0.5f, obj->distancia, 10, 100);
 		glPopMatrix();
 	}
 
 	// Dibujamos el objeto
 	glColor3f(obj->r, obj->g, obj->b);
 	glPushMatrix();
-		glRotatef(obj->angulo_trans, 0.0, 1.0, 0.0);
-		glTranslatef(obj->distancia, 0.0, 0.0);
+	glRotatef(obj->angulo_trans, 0.0, 1.0, 0.0);
+	glTranslatef(obj->distancia, 0.0, 0.0);
+	glPushMatrix();
+	glRotatef(obj->angulo_rot, 0, 1, 0);
+	glScalef(obj->tamano, obj->tamano, obj->tamano);
+	glCallList(obj->listarender);
+	glPopMatrix();
+	if (obj->distancia == saturno.distancia) {
+		// Anillos (solo Saturno)
+		//glColor3f(1.0f, 1.0f, 1.0f);
 		glPushMatrix();
-			glRotatef(obj->angulo_rot, 0, 1, 0);
-			glScalef(obj->tamano, obj->tamano, obj->tamano);
-			glCallList(obj->listarender);
+		glRotatef(45.0, 0.0, 0.0, 1.0);
+		glRotatef(90.0, 1.0, 0.0, 0.0);
+		glutWireTorus(0.5f, 90, 1, 100);
+		glutWireTorus(0.5f, 95, 1, 100);
+		glutWireTorus(0.5f, 100, 1, 100);
+		glutWireTorus(0.5f, 105, 1, 100);
+		glutWireTorus(0.5f, 110, 1, 100);
+		glutWireTorus(0.5f, 115, 1, 100);
 		glPopMatrix();
-		if (obj->distancia == saturno.distancia) {
-			// Anillos (solo Saturno)
-			//glColor3f(1.0f, 1.0f, 1.0f);
-			glPushMatrix();
-				glRotatef(45.0, 0.0, 0.0, 1.0);
-				glRotatef(90.0, 1.0, 0.0, 0.0);
-				glScalef(1.0, 1.0, 0.1);
-				glutWireTorus(0.5f, 90, 10, 100);
-				glutWireTorus(0.5f, 95, 10, 100);
-				glutWireTorus(0.5f, 100, 10, 100);
-				glutWireTorus(0.5f, 105, 10, 100);
-				glutWireTorus(0.5f, 110, 10, 100);
-				glutWireTorus(0.5f, 115, 10, 100);
-			glPopMatrix();
-		}
-		for (i = 0; i < obj->num_sat; i++) {
-			dibujarObjeto((obj->satelites)[i]);
-		}
+
+	}
+
+	for (i = 0; i < obj->num_sat; i++) {
+		dibujarObjeto((obj->satelites)[i]);
+	}
+
 	glPopMatrix();
 }
 
@@ -141,7 +172,7 @@ void myDisplay(void) {
 	glLoadIdentity();
 
 	// Establecemos el modo de rasterizacion
-	glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
 	// Dibujamos el sol
 	// El resto de objetos se iran dibujando con las llamadas
@@ -226,7 +257,7 @@ void onMenu(int opcion) {
 }
 
 void myMenu(void) {
-	int menuFondo;			
+	int menuFondo;
 
 	menuFondo = glutCreateMenu(onMenu);
 	glutAddMenuEntry("Voyager", 1);
@@ -246,8 +277,6 @@ void myMenu(void) {
 	glutAttachMenu(GLUT_RIGHT_BUTTON);
 }
 
-
-
 // Funcion de reescalado
 void changeSizec(GLint newWidth, GLint newHeight) {
 	glViewport(0, 0, newWidth, newHeight);
@@ -255,7 +284,28 @@ void changeSizec(GLint newWidth, GLint newHeight) {
 	height = newHeight;
 }
 
+// Funcion para activar a luz do sol
+void luz_sol() {
+	glEnable(GL_LIGHT0);
 
+	glEnable(GL_COLOR_MATERIAL);
+	glColorMaterial(GL_FRONT, GL_AMBIENT);
+}
+
+void luz_planeta() {
+	// Habilitamos a luz dos planetas e deshabilitamos a luz do sol
+	glDisable(GL_LIGHT0);
+	glEnable(GL_LIGHT1);
+
+	// Definimos o seguimento da cor como propiedade luminosa
+	// nos materiais
+	glEnable(GL_COLOR_MATERIAL);
+	glColorMaterial(GL_FRONT, GL_AMBIENT_AND_DIFFUSE);
+
+	// Definimos as propiedades de brillo metalico
+	glMaterialfv(GL_FRONT, GL_SPECULAR, especularRef);
+	glMateriali(GL_FRONT, GL_SHININESS, 2);
+}
 
 
 int main(int argc, char** argv) {
@@ -272,16 +322,36 @@ int main(int argc, char** argv) {
 	//Crear la ventana
 	glutCreateWindow("Sistema Solar");
 
+
 	//Detectar profundidad de objetos y no dibujar caras ocultas
 	glClearDepth(1.0f);
 	glEnable(GL_DEPTH_TEST);
+	// Deshabilitar la vista de las caras ocultas
 	glEnable(GL_CULL_FACE);
 	//Normalizar las normales
 	glEnable(GL_NORMALIZE);
 
+	// Definimos o modelo de iluminacion para o sol
+	glLightfv(GL_LIGHT0, GL_AMBIENT, ambiente_sol);
+	glLightfv(GL_LIGHT0, GL_DIFFUSE, difusa_sol);
+	glLightfv(GL_LIGHT0, GL_SPECULAR, especular_sol);
+
+	// Definimos o modelo de iluminacion para os planetas
+	glLightfv(GL_LIGHT1, GL_AMBIENT, ambiente);
+	glLightfv(GL_LIGHT1, GL_DIFFUSE, difusa);
+	glLightfv(GL_LIGHT1, GL_SPECULAR, especular);
+	glLightfv(GL_LIGHT1, GL_POSITION, posLuz);
+	glLightfv(GL_LIGHT1, GL_SPOT_DIRECTION, dirFoco);
+
+	// Definimos un foco con aprtura de 180 graos
+	glLightf(GL_LIGHT1, GL_SPOT_CUTOFF, 180.0f);
+
+	// Habilitamos as luces no sistema solar
+	glEnable(GL_LIGHTING);
+
 	//Eventos
 
-	//Funcion que mira el teclado
+	//Funciones que mira el teclado
 	glutKeyboardFunc(myTeclado);
 	glutSpecialFunc(myTeclasespeciales);
 	//Funcion de dibujo
@@ -337,6 +407,18 @@ int main(int argc, char** argv) {
 	urano.num_sat = 0;
 	neptuno.num_sat = 0;
 
+	// Establecemos as funcions que determinan o
+	// modelo de iluminacion para cada planeta
+	sol.luz_obxecto = luz_sol;
+	mercurio.luz_obxecto = luz_planeta;
+	venus.luz_obxecto = NULL;
+	luna.luz_obxecto = NULL;
+	iss.luz_obxecto = NULL;
+	marte.luz_obxecto = NULL;
+	jupiter.luz_obxecto = NULL;
+	saturno.luz_obxecto = NULL;
+	urano.luz_obxecto = NULL;
+	neptuno.luz_obxecto = NULL;
 
 	//Empieza el bucle principal
 	glutMainLoop();

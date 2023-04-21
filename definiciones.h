@@ -20,6 +20,7 @@ typedef struct {
 	int listarender;			// Lista de renderizacion
 	void* satelites[MAX_SAT];	// Array con sus satelites
 	int num_sat;				// Numero de satelites
+	void (*luz_obxecto)(void);	// Funcion que activa a luz que afecta ao obxecto
 
 } objeto;
 
