@@ -3,13 +3,18 @@
 #include <glut.h>		// Incluimos GLUT
 #include <GL/gl.h>		// Incluimos GL
 #include <gl/glu.h>
+#include <string.h>
 
 #include <stdio.h>
 
 #include <math.h>
 
+#define STB_IMAGE_IMPLEMENTATION
+#include "stb_image.h"
+
 #include "definiciones.h"
 #include "esfera_12.h"
+#include "cubo_skybox.h"
 
 // Variables que determinan o ancho da venta
 int width = 650;
@@ -33,8 +38,9 @@ int height = 650;
 	int num_sat;							// Numero de satelites
 	void (*luz_obxecto)(void);				// Funcion que activa a luz que afecta ao obxecto
 	void (*luz_obxecto_desactivar)(void);	// Funcion que desactiva a luz que afecta ao obxecto
+	int textura								// Identificador da textura
+	int texturaAneis						// Textura para os aneis dos planetas en caso de tela
 */
-
 
 // Aqui solo incluimos hasta listarender
 objeto sol = { 1.0f, 1.0f, 0.0f, 0, 0, 0, 1, 0, 100, 0 };
@@ -71,6 +77,8 @@ GLfloat dirFoco[] = { 1.0f, 1.0f, 1.0f };
 void luz_ambiente();
 void luz_ambiente_desactivar();
 
+// Variable para a textura do fondo
+GLuint textura_milky, textura_stars;
 
 // Camara inicial (Voyager)
 camara = 1;
@@ -79,35 +87,40 @@ void dibujarObjeto(objeto* obj) {
 	int i;
 
 	if (orbitasActivadas() && (obj->distancia != 0)) {
+		glDisable(GL_TEXTURE_2D);
 		// Activamos a luz das orbitas
 		luz_ambiente();
 		// Dibujamos la orbita
-		glColor3f(1.0f, 1.0f, 1.0f);
+		glColor3f(0.5f, 0.5f, 0.5f);
 		glPushMatrix();
 		glRotatef(90.0, 1.0, 0.0, 0.0);
 		glScalef(1.0, 1.0, 0.1);
 		glutWireTorus(0.5f, obj->distancia, 10, 100);
 		glPopMatrix();
 		luz_ambiente_desactivar();
+		glEnable(GL_TEXTURE_2D);
 	}
 
 	// Activamos a iluminacion do obxecto
 	obj->luz_obxecto();
 
-
 	// Dibujamos el objeto
-	glColor3f(obj->r, obj->g, obj->b);
+	glColor3f(1.0f, 1.0f, 1.0f);
 	glPushMatrix();
 	glRotatef(obj->angulo_trans, 0.0, 1.0, 0.0);
 	glTranslatef(obj->distancia, 0.0, 0.0);
 	glPushMatrix();
 	glRotatef(obj->angulo_rot, 0, 1, 0);
 	glScalef(obj->tamano, obj->tamano, obj->tamano);
+	// Habilitamos a textura
+	glBindTexture(GL_TEXTURE_2D, obj->textura);
+	// Renderizamos o obxecto
 	glCallList(obj->listarender);
 	glPopMatrix();
 	if (obj->distancia == saturno.distancia) {
 		// Anillos (solo Saturno)
 		glPushMatrix();
+		glBindTexture(GL_TEXTURE_2D, obj->texturaAneis);
 		glRotatef(45.0, 0.0, 0.0, 1.0);
 		glRotatef(90.0, 1.0, 0.0, 0.0);
 		glutWireTorus(0.5f, 90, 1, 100);
@@ -117,7 +130,6 @@ void dibujarObjeto(objeto* obj) {
 		glutWireTorus(0.5f, 110, 1, 100);
 		glutWireTorus(0.5f, 115, 1, 100);
 		glPopMatrix();
-
 	}
 
 	// Desactivamos a luz do obxecto
@@ -128,6 +140,29 @@ void dibujarObjeto(objeto* obj) {
 	}
 
 	glPopMatrix();
+}
+
+void debuxarFondo() {
+	float tamanhoCubo = 6000.0f;
+
+	glColor3f(1.0f, 1.0f, 1.0f);
+
+	// Activamos a luz ambiente para o fondo
+	luz_ambiente();
+
+	// Escalamos o cubo que debuxa o fondo
+	glPushMatrix();
+	glScalef(tamanhoCubo, tamanhoCubo, tamanhoCubo);
+
+	// Asignamoslle a textura ao fondo
+	glBindTexture(GL_TEXTURE_2D, textura_stars);
+
+	// Renderizamos o cubo
+	glCallList(cubo_skyBox(textura_milky, textura_stars));
+
+	glPopMatrix();
+
+	luz_ambiente_desactivar();
 }
 
 // Funcion de dibujo
@@ -182,6 +217,9 @@ void myDisplay(void) {
 
 	// Establecemos el modo de rasterizacion
 	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+
+	// Debuxamos o fondo
+	debuxarFondo();
 
 	// Dibujamos el sol
 	// El resto de objetos se iran dibujando con las llamadas
@@ -297,8 +335,8 @@ void changeSizec(GLint newWidth, GLint newHeight) {
 void luz_ambiente() {
 	glEnable(GL_LIGHT0);
 
-	glEnable(GL_COLOR_MATERIAL);
-	glColorMaterial(GL_FRONT, GL_AMBIENT);
+	/*glEnable(GL_COLOR_MATERIAL);
+	glColorMaterial(GL_FRONT, GL_AMBIENT);*/
 }
 
 // Funcion para desactivar a luz que ilumina as orbitas e o sol
@@ -326,6 +364,52 @@ void luz_planeta_desactivar() {
 	glDisable(GL_LIGHT1);
 }
 
+void cargar_textura(char* ruta_arquivo, GLuint* textura) {
+	char* destino = "texturas/";
+	char* ruta = NULL;
+	// Tamanho que ocupara o nome do arquivo
+	int tamanho_cadea = (strlen(ruta_arquivo) + strlen(destino) + 1) * sizeof(char);
+
+	ruta = (char*)malloc(tamanho_cadea);
+
+	if (ruta != NULL) {
+		strcpy_s(ruta, tamanho_cadea, destino);
+		strcat_s(ruta, tamanho_cadea, ruta_arquivo);
+	}
+	else {
+		printf("Erro de memoria, non se pode reservar memoria para o nome do ficheiro %s\n", ruta_arquivo);
+		exit(EXIT_FAILURE);
+	}
+
+	glGenTextures(1, textura);
+	// todas as futuras operacions sobre GL_TEXTURE_2D agora tenhen efecto sobre esta textura
+	glBindTexture(GL_TEXTURE_2D, *textura);
+
+	// Establecemos os parametros cando a textura non colle
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+
+	// Establecemos os parametros para filtrar a textura
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+	// Antes de cargar a imaxe invertimola para que quede ao dereito
+	stbi_set_flip_vertically_on_load(1);
+
+	// Cargar a imaxe, creamos a textura e xeramos os mipmaps
+	int ancho, alto, nrChannels;
+	unsigned char* data = stbi_load(ruta, &ancho, &alto, &nrChannels, 0);
+
+	if (data != NULL) {
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, ancho, alto, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
+	}
+	else {
+		printf("Erro cargando a textura");
+	}
+	stbi_image_free(data);
+	free(ruta);
+}
+
 
 int main(int argc, char** argv) {
 
@@ -349,6 +433,11 @@ int main(int argc, char** argv) {
 	glEnable(GL_CULL_FACE);
 	//Normalizar las normales
 	glEnable(GL_NORMALIZE);
+	// Habilitamos as texturas
+	glEnable(GL_TEXTURE_2D);
+	glShadeModel(GL_SMOOTH);
+	// Para evitar que a cor dos obxectos se mesture coas texturas
+	glDisable(GL_BLEND);
 
 	// Definimos o modelo de iluminacion para o sol
 	glLightfv(GL_LIGHT0, GL_AMBIENT, ambiente_sol);
@@ -368,7 +457,6 @@ int main(int argc, char** argv) {
 	// Habilitamos as luces no sistema solar
 	glEnable(GL_LIGHTING);
 
-	//Eventos
 
 	//Funciones que mira el teclado
 	glutKeyboardFunc(myTeclado);
@@ -379,7 +467,6 @@ int main(int argc, char** argv) {
 	glutIdleFunc(idle);
 	//Funcion de reescalado
 	glutReshapeFunc(changeSizec);
-
 
 	//Color con el que se limpian los buffers
 	glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
@@ -453,7 +540,22 @@ int main(int argc, char** argv) {
 	urano.luz_obxecto_desactivar = luz_planeta_desactivar;
 	neptuno.luz_obxecto_desactivar = luz_planeta_desactivar;
 
+	cargar_textura("2k_sun.jpg", &sol.textura);
+	cargar_textura("2k_mercury.jpg", &mercurio.textura);
+	cargar_textura("2k_venus_atmosphere.jpg", &venus.textura);
+	cargar_textura("2k_earth_daymap.jpg", &tierra.textura);
+	cargar_textura("2k_moon.jpg", &luna.textura);
+	cargar_textura("2k_moon.jpg", &iss.textura);
+	cargar_textura("2k_mars.jpg", &marte.textura);
+	cargar_textura("2k_jupiter.jpg", &jupiter.textura);
+	cargar_textura("2k_saturn.jpg", &saturno.textura);
+	cargar_textura("2k_saturn_ring_alpha.png", &saturno.texturaAneis);
+	cargar_textura("2k_uranus.jpg", &urano.textura);
+	cargar_textura("2k_neptune.jpg", &neptuno.textura);
+	cargar_textura("2k_stars_milky_way.jpg", &textura_milky);
+	cargar_textura("2k_stars.jpg", &textura_stars);
+
 	//Empieza el bucle principal
 	glutMainLoop();
-	return 0;
+	return EXIT_SUCCESS;
 }

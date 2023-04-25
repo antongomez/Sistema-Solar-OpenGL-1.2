@@ -86,10 +86,10 @@ void myTeclasespeciales(int cursor, int x, int y)
 		beta -= INCREMENTO;
 		break;
 	case GLUT_KEY_RIGHT:
-		alpha -= INCREMENTO;
+		alpha += INCREMENTO;
 		break;
 	case GLUT_KEY_LEFT:
-		alpha += INCREMENTO;
+		alpha -= INCREMENTO;
 		break;
 
 	default:

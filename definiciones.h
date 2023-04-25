@@ -20,13 +20,11 @@ typedef struct {
 	int listarender;						// Lista de renderizacion
 	void* satelites[MAX_SAT];				// Array con sus satelites
 	int num_sat;							// Numero de satelites
-	void (*luz_obxecto)(void);				// Funcion que activa a luz que afecta ao obxecto
-	void (*luz_obxecto_desactivar)(void);	// Funcion que desactiva a luz que afecta ao obxecto
-
+	void (*luz_obxecto)();					// Funcion que activa a luz que afecta ao obxecto
+	void (*luz_obxecto_desactivar)();		// Funcion que desactiva a luz que afecta ao obxecto
+	GLuint textura;							// Identificador da textura
+	GLuint texturaAneis;					// Indentificador da textura dos aneis en caso de telos
 } objeto;
-
-//#define W_WIDTH 650			// Ancho de la ventana
-//#define W_HEIGHT 650		// Alto de la ventana
 
 #define CR 0.0175
 #define MYTIEMPO 41
@@ -38,9 +36,11 @@ typedef struct {
 #define PI 3.141592
 
 #define NEAR_VOYAGER 1000.0f
-#define FAR_VOYAGER 6000.0f
+//#define FAR_VOYAGER 6000.0f
+#define FAR_VOYAGER 15000.0f
 #define NEAR_TELESCOPIO 20.0f
-#define FAR_TELESCOPIO 2500.0f
+//#define FAR_TELESCOPIO 2500.0f
+#define FAR_TELESCOPIO 10000.0f
 
 void myCamara(int width, int height);
 
