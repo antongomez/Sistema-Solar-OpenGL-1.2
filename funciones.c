@@ -10,10 +10,11 @@ float alpha = 0;
 float beta = PI / 18.0f;
 
 float orbitas = 1;
+float iluminacion = 1;
+float luzSol = 1;
+float parado = 0;
 
 float distancia = DISTANCIA;
-
-
 
 void myCamara(int width, int height) {
 
@@ -70,6 +71,18 @@ int orbitasActivadas() {
 	return orbitas;
 }
 
+int lucesActivadas() {
+	return iluminacion;
+}
+
+int solEncendido() {
+	return luzSol;
+}
+
+int sistemaParado() {
+	return parado;
+}
+
 /**************************************
 FUNCION DE CONTROL DE TECLAS ESPECIAIS:
 **************************************
@@ -80,16 +93,16 @@ void myTeclasespeciales(int cursor, int x, int y)
 	{
 		//Giros:
 	case GLUT_KEY_UP:
-		beta += INCREMENTO;
+		beta += INCREMENTO_XIRAR;
 		break;
 	case GLUT_KEY_DOWN:
-		beta -= INCREMENTO;
+		beta -= INCREMENTO_XIRAR;
 		break;
 	case GLUT_KEY_RIGHT:
-		alpha += INCREMENTO;
+		alpha += INCREMENTO_XIRAR;
 		break;
 	case GLUT_KEY_LEFT:
-		alpha -= INCREMENTO;
+		alpha -= INCREMENTO_XIRAR;
 		break;
 
 	default:
@@ -110,13 +123,36 @@ void myTeclado(unsigned char tras, int x, int y)
 		else {
 			orbitas = 0;
 		}
-
+		break;
+	case 'i':
+		if (iluminacion == 0) {
+			iluminacion = 1;
+		}
+		else {
+			iluminacion = 0;
+		}
+		break;
+	case 's':
+		if (luzSol == 0) {
+			luzSol = 1;
+		}
+		else {
+			luzSol = 0;
+		}
+		break;
+	case ' ':
+		if (parado == 0) {
+			parado = 1;
+		}
+		else {
+			parado = 0;
+		}
 		break;
 	case '+':
-		distancia = fmax(2000.0f, distancia - 10);
+		distancia = fmax(1000.0f, distancia - INCREMENTO_ACERCAR);
 		break;
 	case '-':
-		distancia = fmin(4000.0f, distancia + 10);
+		distancia = fmin(4000.0f, distancia + INCREMENTO_ACERCAR);
 		break;
 	default:
 		break;

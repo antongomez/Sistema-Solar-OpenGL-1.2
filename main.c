@@ -1,20 +1,17 @@
 #include <windows.h>	// Variables de windows
 
 #include <glut.h>		// Incluimos GLUT
-#include <GL/gl.h>		// Incluimos GL
+#include <gl/gl.h>
 #include <gl/glu.h>
 #include <string.h>
 
 #include <stdio.h>
-
 #include <math.h>
 
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
 
 #include "definiciones.h"
-#include "esfera_12.h"
-#include "cubo_skybox.h"
 
 // Variables que determinan o ancho da venta
 int width = 650;
@@ -40,6 +37,7 @@ int height = 650;
 	void (*luz_obxecto_desactivar)(void);	// Funcion que desactiva a luz que afecta ao obxecto
 	int textura								// Identificador da textura
 	int texturaAneis						// Textura para os aneis dos planetas en caso de tela
+	int listarenderAneis					// Lista de renderizacion para os aneis se os ten
 */
 
 // Aqui solo incluimos hasta listarender
@@ -71,14 +69,21 @@ GLfloat posLuz[] = { 0.0f, 0.0f, 0.0f, 1.0f };
 // Define a direccion da luz, ainda que 
 // non a imos usar porque imos facer que 
 // a apertura do foco sexa de 180 graos
-GLfloat dirFoco[] = { 1.0f, 1.0f, 1.0f };
+GLfloat dirFoco[] = { 1.0f, 0.0f, 1.0f };
 
 // Funcions para activar e desactivar as orbitas
 void luz_ambiente();
 void luz_ambiente_desactivar();
 
-// Variable para a textura do fondo
-GLuint textura_milky, textura_stars;
+// Funcions para debuxar un touro texturizado
+void arrayTouro(double r, double R, int rSeg, int cSeg, int textura);
+int crearListaTouro(int textura);
+
+// Variables para as texturas do fondo
+GLuint textura_milky;
+
+// Variable para almacenar o indice da lista que debuxara o fondo
+int listarenderFondo = 0;
 
 // Camara inicial (Voyager)
 camara = 1;
@@ -86,18 +91,37 @@ camara = 1;
 void dibujarObjeto(objeto* obj) {
 	int i;
 
+	if (!lucesActivadas()) {
+		glDisable(GL_LIGHTING);
+	}
+	else {
+		glEnable(GL_LIGHTING);
+	}
+
 	if (orbitasActivadas() && (obj->distancia != 0)) {
+		// Desactivamos as texturas
 		glDisable(GL_TEXTURE_2D);
+
 		// Activamos a luz das orbitas
 		luz_ambiente();
-		// Dibujamos la orbita
+
+
+		// Debuxamos la orbita
 		glColor3f(0.5f, 0.5f, 0.5f);
+
 		glPushMatrix();
+
 		glRotatef(90.0, 1.0, 0.0, 0.0);
 		glScalef(1.0, 1.0, 0.1);
+
 		glutWireTorus(0.5f, obj->distancia, 10, 100);
+
 		glPopMatrix();
+
 		luz_ambiente_desactivar();
+
+
+		// Volvemos a activar as texturas
 		glEnable(GL_TEXTURE_2D);
 	}
 
@@ -106,29 +130,33 @@ void dibujarObjeto(objeto* obj) {
 
 	// Dibujamos el objeto
 	glColor3f(1.0f, 1.0f, 1.0f);
+
 	glPushMatrix();
+
 	glRotatef(obj->angulo_trans, 0.0, 1.0, 0.0);
 	glTranslatef(obj->distancia, 0.0, 0.0);
+
 	glPushMatrix();
+
 	glRotatef(obj->angulo_rot, 0, 1, 0);
 	glScalef(obj->tamano, obj->tamano, obj->tamano);
+
 	// Habilitamos a textura
 	glBindTexture(GL_TEXTURE_2D, obj->textura);
 	// Renderizamos o obxecto
 	glCallList(obj->listarender);
+
 	glPopMatrix();
-	if (obj->distancia == saturno.distancia) {
-		// Anillos (solo Saturno)
+
+	if (obj->listarenderAneis) {
+		glColor3f(1.0f, 1.0f, 1.0f);
 		glPushMatrix();
-		glBindTexture(GL_TEXTURE_2D, obj->texturaAneis);
-		glRotatef(45.0, 0.0, 0.0, 1.0);
+		// Facemos que o touro rote co planeta
+		glRotatef(obj->angulo_rot, 0, 1, 0);
+		// Ponhemos o touro en horizontal
 		glRotatef(90.0, 1.0, 0.0, 0.0);
-		glutWireTorus(0.5f, 90, 1, 100);
-		glutWireTorus(0.5f, 95, 1, 100);
-		glutWireTorus(0.5f, 100, 1, 100);
-		glutWireTorus(0.5f, 105, 1, 100);
-		glutWireTorus(0.5f, 110, 1, 100);
-		glutWireTorus(0.5f, 115, 1, 100);
+		glScalef(1.0f, 1.0f, 0.1f);
+		glCallList(obj->listarenderAneis);
 		glPopMatrix();
 	}
 
@@ -143,24 +171,28 @@ void dibujarObjeto(objeto* obj) {
 }
 
 void debuxarFondo() {
-	float tamanhoCubo = 6000.0f;
 
 	glColor3f(1.0f, 1.0f, 1.0f);
 
 	// Activamos a luz ambiente para o fondo
 	luz_ambiente();
 
+	glDisable(GL_CULL_FACE);
+
 	// Escalamos o cubo que debuxa o fondo
 	glPushMatrix();
-	glScalef(tamanhoCubo, tamanhoCubo, tamanhoCubo);
+	glRotatef(180.0, 0.0, 1.0, 0.0);
+	glScalef(DISTANCIA_FONDO, DISTANCIA_FONDO, DISTANCIA_FONDO);
 
 	// Asignamoslle a textura ao fondo
-	glBindTexture(GL_TEXTURE_2D, textura_stars);
+	glBindTexture(GL_TEXTURE_2D, textura_milky);
 
-	// Renderizamos o cubo
-	glCallList(cubo_skyBox(textura_milky, textura_stars));
+	// Renderizamos o fondo que sera unha esfera
+	glCallList(listarenderFondo);
 
 	glPopMatrix();
+
+	glEnable(GL_CULL_FACE);
 
 	luz_ambiente_desactivar();
 }
@@ -243,19 +275,21 @@ void moverObjeto(objeto* obj) {
 
 
 void myMovimiento(int i) {
-	moverObjeto(&sol);
-	moverObjeto(&mercurio);
-	moverObjeto(&venus);
-	moverObjeto(&tierra);
-	moverObjeto(&luna);
-	moverObjeto(&iss);
-	moverObjeto(&marte);
-	moverObjeto(&jupiter);
-	moverObjeto(&saturno);
-	moverObjeto(&urano);
-	moverObjeto(&neptuno);
+	if (!sistemaParado()) {
+		moverObjeto(&sol);
+		moverObjeto(&mercurio);
+		moverObjeto(&venus);
+		moverObjeto(&tierra);
+		moverObjeto(&luna);
+		moverObjeto(&iss);
+		moverObjeto(&marte);
+		moverObjeto(&jupiter);
+		moverObjeto(&saturno);
+		moverObjeto(&urano);
+		moverObjeto(&neptuno);
 
-	glutPostRedisplay();
+		glutPostRedisplay();
+	}
 
 	glutTimerFunc(MYTIEMPO, myMovimiento, 10);
 
@@ -333,30 +367,36 @@ void changeSizec(GLint newWidth, GLint newHeight) {
 
 // Funcion para activar a luz que ilumina as orbitas e o sol
 void luz_ambiente() {
-	glEnable(GL_LIGHT0);
+	if (solEncendido()) {
+		glEnable(GL_LIGHT0);
 
-	/*glEnable(GL_COLOR_MATERIAL);
-	glColorMaterial(GL_FRONT, GL_AMBIENT);*/
+		glEnable(GL_COLOR_MATERIAL);
+		glColorMaterial(GL_FRONT, GL_AMBIENT);
+	}
 }
 
 // Funcion para desactivar a luz que ilumina as orbitas e o sol
 void luz_ambiente_desactivar() {
-	glDisable(GL_LIGHT0);
+	if (solEncendido()) {
+		glDisable(GL_LIGHT0);
+	}
 }
 
 // Funcion para activar a luz dos planetas
 void luz_planeta() {
-	// Habilitamos a luz dos planetas
-	glEnable(GL_LIGHT1);
+	if (solEncendido()) {
+		// Habilitamos a luz dos planetas
+		glEnable(GL_LIGHT1);
 
-	// Definimos o seguimento da cor como propiedade luminosa
-	// nos materiais
-	glEnable(GL_COLOR_MATERIAL);
-	glColorMaterial(GL_FRONT, GL_AMBIENT_AND_DIFFUSE);
+		// Definimos o seguimento da cor como propiedade luminosa
+		// nos materiais
+		glEnable(GL_COLOR_MATERIAL);
+		glColorMaterial(GL_FRONT, GL_AMBIENT_AND_DIFFUSE);
 
-	// Definimos as propiedades de brillo metalico
-	glMaterialfv(GL_FRONT, GL_SPECULAR, especularRef);
-	glMateriali(GL_FRONT, GL_SHININESS, 2);
+		// Definimos as propiedades de brillo metalico
+		/*glMaterialfv(GL_FRONT, GL_SPECULAR, especularRef);
+		glMateriali(GL_FRONT, GL_SHININESS, 128);*/
+	}
 }
 
 // Funcion para desactivar a luz dos planetas
@@ -476,7 +516,7 @@ int main(int argc, char** argv) {
 	myCamara(width, height);
 
 	// Establecemos el modelado de cada objeto (la mayoria son esferas)
-	listarender = myEsfera();
+	listarender = crearListaEsfera();
 	sol.listarender = listarender;
 	mercurio.listarender = listarender;
 	tierra.listarender = listarender;
@@ -488,6 +528,9 @@ int main(int argc, char** argv) {
 	saturno.listarender = listarender;
 	urano.listarender = listarender;
 	neptuno.listarender = listarender;
+
+	// O fondo tamen e unha esfera
+	listarenderFondo = listarender;
 
 	// Establecemos cuales son los objetos que orbitan a otros
 	sol.satelites[0] = &mercurio;
@@ -549,13 +592,66 @@ int main(int argc, char** argv) {
 	cargar_textura("2k_mars.jpg", &marte.textura);
 	cargar_textura("2k_jupiter.jpg", &jupiter.textura);
 	cargar_textura("2k_saturn.jpg", &saturno.textura);
-	cargar_textura("2k_saturn_ring_alpha.png", &saturno.texturaAneis);
+	cargar_textura("textura_aneis.jpg", &saturno.texturaAneis);
 	cargar_textura("2k_uranus.jpg", &urano.textura);
 	cargar_textura("2k_neptune.jpg", &neptuno.textura);
 	cargar_textura("2k_stars_milky_way.jpg", &textura_milky);
-	cargar_textura("2k_stars.jpg", &textura_stars);
+
+	sol.listarenderAneis = 0;
+	mercurio.listarenderAneis = 0;
+	tierra.listarenderAneis = 0;
+	iss.listarenderAneis = 0;
+	luna.listarenderAneis = 0;
+	marte.listarenderAneis = 0;
+	venus.listarenderAneis = 0;
+	jupiter.listarenderAneis = 0;
+	saturno.listarenderAneis = crearListaTouro(saturno.texturaAneis);
+	urano.listarenderAneis = 0;
+	neptuno.listarenderAneis = 0;
 
 	//Empieza el bucle principal
 	glutMainLoop();
 	return EXIT_SUCCESS;
+}
+
+void arrayTouro(double r, double R, int rSeg, int cSeg, int textura) {
+	glFrontFace(GL_CW);
+
+	glBindTexture(GL_TEXTURE_2D, textura);
+	//modo de fusion de la textura
+	glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
+
+	for (int i = 0; i < rSeg; i++) {
+		glBegin(GL_QUAD_STRIP);
+		for (int j = 0; j <= cSeg; j++) {
+			for (int k = 0; k <= 1; k++) {
+				//pasos
+				double s = (i + k) % rSeg + 0.5;
+				double t = j % (cSeg + 1);
+				//coordenadas del toro
+				double x = (R + r * cos(s * 2 * PI / rSeg)) * cos(t * 2 * PI / cSeg);
+				double y = (R + r * cos(s * 2 * PI / rSeg)) * sin(t * 2 * PI / cSeg);
+				double z = r * sin(s * 2 * PI / rSeg);
+				//coordenadas de textura
+				double u = (i + k) / (float)rSeg;
+				double v = t / (float)cSeg;
+
+				glTexCoord2d(u, v);
+				glNormal3f(2 * x, 2 * y, 2 * z);
+				glVertex3d(2 * x, 2 * y, 2 * z);
+			}
+		}
+		glEnd();
+	}
+	glFrontFace(GL_CCW);
+}
+
+int crearListaTouro(int textura) {
+	// Creamos unha lista cos aneis do touro
+	int indice = glGenLists(1);
+	glNewList(indice, GL_COMPILE);
+	arrayTouro(12, 60, 8, 32, textura);
+	glEndList();
+
+	return indice;
 }

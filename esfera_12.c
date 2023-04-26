@@ -1,12 +1,6 @@
-#include <windows.h>
-#include <stdio.h>
-#include <glut.h>
-#include <gl.h>
-#include <glu.h>
-#include <glaux.h>
-#include "esfera_12.h"
+#include "definiciones.h"
 
-int myEsfera()
+int crearListaEsfera()
 {
 	int indice;
 	indice = glGenLists(1);
