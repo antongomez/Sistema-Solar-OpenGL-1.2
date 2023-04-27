@@ -36,22 +36,21 @@ int height = 650;
 	void (*luz_obxecto)(void);				// Funcion que activa a luz que afecta ao obxecto
 	void (*luz_obxecto_desactivar)(void);	// Funcion que desactiva a luz que afecta ao obxecto
 	int textura								// Identificador da textura
-	int texturaAneis						// Textura para os aneis dos planetas en caso de tela
 	int listarenderAneis					// Lista de renderizacion para os aneis se os ten
 */
 
 // Aqui solo incluimos hasta listarender
-objeto sol = { 1.0f, 1.0f, 0.0f, 0, 0, 0, 1, 0, 100, 0 };
-objeto mercurio = { 0.7f, 0.7f, 0.7f, 200, 5, 0, 6, 0, 20, 0 };
-objeto venus = { 0.9f, 0.5f, 0.0f, 350, 4.5, 0, 6, 0, 40, 0 };
-objeto tierra = { 0.0f, 1.0f, 0.75f, 500, 4, 0, 5, 0, 40, 0 };
+objeto sol = { 1.0f, 1.0f, 1.0f, 0, 0, 0, 1, 0, 100, 0 };
+objeto mercurio = { 1.0f, 1.0f, 1.0f, 200, 5, 0, 6, 0, 20, 0 };
+objeto venus = { 1.0f, 1.0f, 1.0f, 350, 4.5, 0, 6, 0, 40, 0 };
+objeto tierra = { 1.0f, 1.0f, 1.0f, 500, 4, 0, 5, 0, 40, 0 };
 objeto luna = { 1.0f, 1.0f, 1.0f, 100, 3, 0, 0, 0, 10, 0 };
 objeto iss = { 1.0f, 1.0f, 1.0f, 60, 4, 0, 0, 0, 3, 0 };
-objeto marte = { 1.0f, 0.0f, 0.0f, 700, 2.5, 0, 4, 0, 30, 0 };
-objeto jupiter = { 0.5f, 0.2f, 0.0f, 900, 2, 0, 3, 0, 70, 0 };
-objeto saturno = { 1.0f, 0.7f, 0.0f, 1100, 1.5, 0, 3, 0, 60, 0 };
-objeto urano = { 0.0f, 1.0f, 1.0f, 1300, 1, 0, 3, 0, 50, 0 };
-objeto neptuno = { 0.0f, 0.0f, 1.0f, 1500, 0.5, 0, 3, 0, 50, 0 };
+objeto marte = { 1.0f, 1.0f, 1.0f, 700, 2.5, 0, 4, 0, 30, 0 };
+objeto jupiter = { 1.0f, 1.0f, 1.0f, 900, 2, 0, 3, 0, 70, 0 };
+objeto saturno = { 1.0f, 1.0f, 1.0f, 1100, 1.5, 0, 3, 0, 60, 0 };
+objeto urano = { 1.0f, 1.0f, 1.0f, 1300, 1, 0, 3, 0, 50, 0 };
+objeto neptuno = { 1.0f, 1.0f, 1.0f, 1500, 0.5, 0, 3, 0, 50, 0 };
 
 // Variables de iluminacion para o sol
 GLfloat ambiente_sol[] = { 1.0f, 1.0f, 1.0f, 1.0f };
@@ -129,7 +128,7 @@ void dibujarObjeto(objeto* obj) {
 	obj->luz_obxecto();
 
 	// Dibujamos el objeto
-	glColor3f(1.0f, 1.0f, 1.0f);
+	glColor3f(obj->r, obj->g, obj->b);
 
 	glPushMatrix();
 
@@ -592,7 +591,6 @@ int main(int argc, char** argv) {
 	cargar_textura("2k_mars.jpg", &marte.textura);
 	cargar_textura("2k_jupiter.jpg", &jupiter.textura);
 	cargar_textura("2k_saturn.jpg", &saturno.textura);
-	cargar_textura("textura_aneis.jpg", &saturno.texturaAneis);
 	cargar_textura("2k_uranus.jpg", &urano.textura);
 	cargar_textura("2k_neptune.jpg", &neptuno.textura);
 	cargar_textura("2k_stars_milky_way.jpg", &textura_milky);
@@ -605,7 +603,9 @@ int main(int argc, char** argv) {
 	marte.listarenderAneis = 0;
 	venus.listarenderAneis = 0;
 	jupiter.listarenderAneis = 0;
-	saturno.listarenderAneis = crearListaTouro(saturno.texturaAneis);
+	int texturaAneisTouro;
+	cargar_textura("textura_aneis.jpg", &texturaAneisTouro);
+	saturno.listarenderAneis = crearListaTouro(texturaAneisTouro);
 	urano.listarenderAneis = 0;
 	neptuno.listarenderAneis = 0;
 

@@ -28,7 +28,6 @@ typedef struct {
 	void (*luz_obxecto)();					// Funcion que activa a luz que afecta ao obxecto
 	void (*luz_obxecto_desactivar)();		// Funcion que desactiva a luz que afecta ao obxecto
 	GLuint textura;							// Identificador da textura
-	GLuint texturaAneis;					// Indentificador da textura dos aneis en caso de telos
 	int listarenderAneis;					// Lista de renderizacion para os aneis se os ten
 } objeto;
 
