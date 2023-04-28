@@ -56,6 +56,10 @@ typedef struct {
 #define INDICE_LISTA_CUBO 2
 #define INDICE_LISTA_TOURO 3
 
+// Establecemos a cantidade de reflexos que queremos nos planetas e na ISS
+#define BRILLO_PLANETAS 10
+#define BRILLO_ISS 100
+
 void myCamara(int width, int height);
 
 void myTeclado(unsigned char tras, int x, int y);
@@ -66,7 +70,6 @@ void myTelescopio3(float distancia, float angulo, float distancia_obj, float ang
 int orbitasActivadas();
 
 int crearListaEsfera();
-int crearListaCubo(int textura);
 
 int orbitasActivadas();
 int lucesActivadas();

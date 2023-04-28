@@ -60,8 +60,8 @@ GLfloat especular_sol[] = { 0, 0, 0, 1.0f };
 // Variables de iluminacion para os planetas
 GLfloat ambiente[] = { 0, 0, 0, 1.0f };
 GLfloat difusa[] = { 1.0f, 1.0f, 1.0f, 1.0f };
-GLfloat especularRef[] = { 1.0f, 1.0f, 1.0f, 1.0f };
-GLfloat especular[] = { 1.0f, 1.0f, 1.0f, 1.0f };
+GLfloat especularRef[] = { 0.8f, 0.8f, 0.8f, 0.8f };
+GLfloat especular[] = { 0.5f, 0.5f, 0.5f, 1.0f };
 
 // Variable para definir a posicion do foco
 GLfloat posLuz[] = { 0.0f, 0.0f, 0.0f, 1.0f };
@@ -78,7 +78,7 @@ void luz_ambiente_desactivar();
 void arrayTouro(double r, double R, int rSeg, int cSeg, int textura);
 int crearListaTouro(int textura);
 
-// Variables para as texturas do fondo
+// Variable para a textura do fondo
 GLuint textura_milky;
 
 // Variable para almacenar o indice da lista que debuxara o fondo
@@ -88,8 +88,8 @@ int listarenderFondo = 0;
 camara = 1;
 
 void dibujarObjeto(objeto* obj) {
-	int i;
 
+	// Aplicamos as luces so se estan activadas
 	if (!lucesActivadas()) {
 		glDisable(GL_LIGHTING);
 	}
@@ -97,6 +97,7 @@ void dibujarObjeto(objeto* obj) {
 		glEnable(GL_LIGHTING);
 	}
 
+	// Debuxamos as orbitas so se estan activadas
 	if (orbitasActivadas() && (obj->distancia != 0)) {
 		// Desactivamos as texturas
 		glDisable(GL_TEXTURE_2D);
@@ -104,12 +105,10 @@ void dibujarObjeto(objeto* obj) {
 		// Activamos a luz das orbitas
 		luz_ambiente();
 
-
 		// Debuxamos la orbita
 		glColor3f(0.5f, 0.5f, 0.5f);
 
 		glPushMatrix();
-
 		glRotatef(90.0, 1.0, 0.0, 0.0);
 		glScalef(1.0, 1.0, 0.1);
 
@@ -119,7 +118,6 @@ void dibujarObjeto(objeto* obj) {
 
 		luz_ambiente_desactivar();
 
-
 		// Volvemos a activar as texturas
 		glEnable(GL_TEXTURE_2D);
 	}
@@ -127,7 +125,7 @@ void dibujarObjeto(objeto* obj) {
 	// Activamos a iluminacion do obxecto
 	obj->luz_obxecto();
 
-	// Dibujamos el objeto
+	// Debuxamos o obxecto
 	glColor3f(obj->r, obj->g, obj->b);
 
 	glPushMatrix();
@@ -142,6 +140,7 @@ void dibujarObjeto(objeto* obj) {
 
 	// Habilitamos a textura
 	glBindTexture(GL_TEXTURE_2D, obj->textura);
+
 	// Renderizamos o obxecto
 	glCallList(obj->listarender);
 
@@ -162,13 +161,15 @@ void dibujarObjeto(objeto* obj) {
 	// Desactivamos a luz do obxecto
 	obj->luz_obxecto_desactivar();
 
-	for (i = 0; i < obj->num_sat; i++) {
+	// Debuxamos os satelites de cada planeta ou estrela
+	for (int i = 0; i < obj->num_sat; i++) {
 		dibujarObjeto((obj->satelites)[i]);
 	}
 
 	glPopMatrix();
 }
 
+// Funcion para debuxar o fondo e asignarlle unha textura
 void debuxarFondo() {
 
 	glColor3f(1.0f, 1.0f, 1.0f);
@@ -176,9 +177,10 @@ void debuxarFondo() {
 	// Activamos a luz ambiente para o fondo
 	luz_ambiente();
 
+	// Para que se poidan ver tamen as caras interiores da esfera
 	glDisable(GL_CULL_FACE);
 
-	// Escalamos o cubo que debuxa o fondo
+	// Escalamos a esfera que debuxa o fondo
 	glPushMatrix();
 	glRotatef(180.0, 0.0, 1.0, 0.0);
 	glScalef(DISTANCIA_FONDO, DISTANCIA_FONDO, DISTANCIA_FONDO);
@@ -252,7 +254,7 @@ void myDisplay(void) {
 	// Debuxamos o fondo
 	debuxarFondo();
 
-	// Dibujamos el sol
+	// Debuxamos o sol
 	// El resto de objetos se iran dibujando con las llamadas
 	// recursivas de la funcion dibujarObjeto
 	dibujarObjeto(&sol);
@@ -261,9 +263,7 @@ void myDisplay(void) {
 	glutSwapBuffers();
 }
 
-void idle(void) {
-	// glutPostRedisplay();
-}
+void idle(void) {}
 
 void moverObjeto(objeto* obj) {
 	obj->angulo_trans += obj->velocidad_trans;
@@ -271,7 +271,6 @@ void moverObjeto(objeto* obj) {
 	obj->angulo_rot += obj->velocidad_rot;
 	if (obj->angulo_rot > 360) obj->angulo_rot -= 360;
 }
-
 
 void myMovimiento(int i) {
 	if (!sistemaParado()) {
@@ -295,44 +294,7 @@ void myMovimiento(int i) {
 }
 
 void onMenu(int opcion) {
-	switch (opcion) {
-	case 1:
-		camara = 1;
-		break;
-	case 2:
-		camara = 2;
-		break;
-	case 3:
-		camara = 3;
-		break;
-	case 4:
-		camara = 4;
-		break;
-	case 5:
-		camara = 5;
-		break;
-	case 6:
-		camara = 6;
-		break;
-	case 7:
-		camara = 7;
-		break;
-	case 8:
-		camara = 8;
-		break;
-	case 9:
-		camara = 9;
-		break;
-	case 10:
-		camara = 10;
-		break;
-	case 11:
-		camara = 11;
-		break;
-	case 12:
-		camara = 12;
-		break;
-	}
+	camara = opcion;
 	glutPostRedisplay();
 }
 
@@ -353,7 +315,6 @@ void myMenu(void) {
 	glutAddMenuEntry("Tierra desde Luna", 11);
 	glutAddMenuEntry("Tierra desde ISS", 12);
 
-
 	glutAttachMenu(GLUT_RIGHT_BUTTON);
 }
 
@@ -368,9 +329,6 @@ void changeSizec(GLint newWidth, GLint newHeight) {
 void luz_ambiente() {
 	if (solEncendido()) {
 		glEnable(GL_LIGHT0);
-
-		glEnable(GL_COLOR_MATERIAL);
-		glColorMaterial(GL_FRONT, GL_AMBIENT);
 	}
 }
 
@@ -387,22 +345,33 @@ void luz_planeta() {
 		// Habilitamos a luz dos planetas
 		glEnable(GL_LIGHT1);
 
-		// Definimos o seguimento da cor como propiedade luminosa
-		// nos materiais
-		glEnable(GL_COLOR_MATERIAL);
-		glColorMaterial(GL_FRONT, GL_AMBIENT_AND_DIFFUSE);
-
 		// Definimos as propiedades de brillo metalico
-		/*glMaterialfv(GL_FRONT, GL_SPECULAR, especularRef);
-		glMateriali(GL_FRONT, GL_SHININESS, 128);*/
+		glMaterialfv(GL_FRONT, GL_SPECULAR, especularRef);
+		// Podemos establecer o brillo entre [0,128]
+		glMateriali(GL_FRONT, GL_SHININESS, BRILLO_PLANETAS);
 	}
 }
 
-// Funcion para desactivar a luz dos planetas
+// Funcion para activar a luz da iss
+void luz_iss() {
+	if (solEncendido()) {
+		// Habilitamos a luz dos planetas
+		glEnable(GL_LIGHT1);
+
+		// Definimos as propiedades de brillo metalico
+		glMaterialfv(GL_FRONT, GL_SPECULAR, especularRef);
+		// Podemos establecer o brillo entre [0,128]
+		glMateriali(GL_FRONT, GL_SHININESS, BRILLO_ISS);
+	}
+}
+
+// Funcion para desactivar a luz dos planetas e da iss
 void luz_planeta_desactivar() {
 	glDisable(GL_LIGHT1);
 }
 
+
+// Funcion para cargar as texturas
 void cargar_textura(char* ruta_arquivo, GLuint* textura) {
 	char* destino = "texturas/";
 	char* ruta = NULL;
@@ -449,73 +418,10 @@ void cargar_textura(char* ruta_arquivo, GLuint* textura) {
 	free(ruta);
 }
 
-
-int main(int argc, char** argv) {
-
-	int listarender = 0;
-
-	glutInit(&argc, argv);
-	//Posicion de la ventana
-	glutInitWindowPosition(50, 50);
-	//Tamano de la ventana
-	glutInitWindowSize(width, height);
-	//Inicializa el modo de display, RGBA y Doble buffer
-	glutInitDisplayMode(GLUT_RGBA | GLUT_DOUBLE);
-	//Crear la ventana
-	glutCreateWindow("Sistema Solar");
-
-
-	//Detectar profundidad de objetos y no dibujar caras ocultas
-	glClearDepth(1.0f);
-	glEnable(GL_DEPTH_TEST);
-	// Deshabilitar la vista de las caras ocultas
-	glEnable(GL_CULL_FACE);
-	//Normalizar las normales
-	glEnable(GL_NORMALIZE);
-	// Habilitamos as texturas
-	glEnable(GL_TEXTURE_2D);
-	glShadeModel(GL_SMOOTH);
-	// Para evitar que a cor dos obxectos se mesture coas texturas
-	glDisable(GL_BLEND);
-
-	// Definimos o modelo de iluminacion para o sol
-	glLightfv(GL_LIGHT0, GL_AMBIENT, ambiente_sol);
-	glLightfv(GL_LIGHT0, GL_DIFFUSE, difusa_sol);
-	glLightfv(GL_LIGHT0, GL_SPECULAR, especular_sol);
-
-	// Definimos o modelo de iluminacion para os planetas
-	glLightfv(GL_LIGHT1, GL_AMBIENT, ambiente);
-	glLightfv(GL_LIGHT1, GL_DIFFUSE, difusa);
-	glLightfv(GL_LIGHT1, GL_SPECULAR, especular);
-	glLightfv(GL_LIGHT1, GL_POSITION, posLuz);
-	glLightfv(GL_LIGHT1, GL_SPOT_DIRECTION, dirFoco);
-
-	// Definimos un foco con aprtura de 180 graos
-	glLightf(GL_LIGHT1, GL_SPOT_CUTOFF, 180.0f);
-
-	// Habilitamos as luces no sistema solar
-	glEnable(GL_LIGHTING);
-
-
-	//Funciones que mira el teclado
-	glutKeyboardFunc(myTeclado);
-	glutSpecialFunc(myTeclasespeciales);
-	//Funcion de dibujo
-	glutDisplayFunc(myDisplay);
-	//Funcion de actualizacion
-	glutIdleFunc(idle);
-	//Funcion de reescalado
-	glutReshapeFunc(changeSizec);
-
-	//Color con el que se limpian los buffers
-	glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-
-	myMovimiento(1);
-	myMenu();
-	myCamara(width, height);
+void inicializarObxectos() {
 
 	// Establecemos el modelado de cada objeto (la mayoria son esferas)
-	listarender = crearListaEsfera();
+	int listarender = crearListaEsfera();
 	sol.listarender = listarender;
 	mercurio.listarender = listarender;
 	tierra.listarender = listarender;
@@ -541,8 +447,8 @@ int main(int argc, char** argv) {
 	sol.satelites[6] = &urano;
 	sol.satelites[7] = &neptuno;
 	sol.num_sat = 8;
-	tierra.satelites[0] = &luna;
-	tierra.satelites[1] = &iss;
+	tierra.satelites[0] = &iss;
+	tierra.satelites[1] = &luna;
 	tierra.num_sat = 2;
 
 	mercurio.num_sat = 0;
@@ -563,7 +469,7 @@ int main(int argc, char** argv) {
 	venus.luz_obxecto = luz_planeta;
 	tierra.luz_obxecto = luz_planeta;
 	luna.luz_obxecto = luz_planeta;
-	iss.luz_obxecto = luz_planeta;
+	iss.luz_obxecto = luz_iss;
 	marte.luz_obxecto = luz_planeta;
 	jupiter.luz_obxecto = luz_planeta;
 	saturno.luz_obxecto = luz_planeta;
@@ -587,7 +493,7 @@ int main(int argc, char** argv) {
 	cargar_textura("2k_venus_atmosphere.jpg", &venus.textura);
 	cargar_textura("2k_earth_daymap.jpg", &tierra.textura);
 	cargar_textura("2k_moon.jpg", &luna.textura);
-	cargar_textura("2k_moon.jpg", &iss.textura);
+	cargar_textura("estacion.jpg", &iss.textura);
 	cargar_textura("2k_mars.jpg", &marte.textura);
 	cargar_textura("2k_jupiter.jpg", &jupiter.textura);
 	cargar_textura("2k_saturn.jpg", &saturno.textura);
@@ -603,11 +509,81 @@ int main(int argc, char** argv) {
 	marte.listarenderAneis = 0;
 	venus.listarenderAneis = 0;
 	jupiter.listarenderAneis = 0;
-	int texturaAneisTouro;
-	cargar_textura("textura_aneis.jpg", &texturaAneisTouro);
+	int texturaAneisTouro = 0;
+	cargar_textura("textura_aneis.jpg", &texturaAneisTouro, GL_RGB);
 	saturno.listarenderAneis = crearListaTouro(texturaAneisTouro);
 	urano.listarenderAneis = 0;
 	neptuno.listarenderAneis = 0;
+}
+
+void inicializar_iluminacion() {
+	// Definimos o modelo de iluminacion para o sol
+	glLightfv(GL_LIGHT0, GL_AMBIENT, ambiente_sol);
+	glLightfv(GL_LIGHT0, GL_DIFFUSE, difusa_sol);
+	glLightfv(GL_LIGHT0, GL_SPECULAR, especular_sol);
+
+	// Definimos o modelo de iluminacion para os planetas
+	glLightfv(GL_LIGHT1, GL_AMBIENT, ambiente);
+	glLightfv(GL_LIGHT1, GL_DIFFUSE, difusa);
+	glLightfv(GL_LIGHT1, GL_SPECULAR, especular);
+	glLightfv(GL_LIGHT1, GL_POSITION, posLuz);
+	glLightfv(GL_LIGHT1, GL_SPOT_DIRECTION, dirFoco);
+	// Definimos un foco con aprtura de 180 graos
+	glLightf(GL_LIGHT1, GL_SPOT_CUTOFF, 180.0f);
+
+	// Habilitamos as luces no sistema solar
+	glEnable(GL_LIGHTING);
+
+	// Definimos o seguimento da cor como propiedade luminosa nos materiais
+	glEnable(GL_COLOR_MATERIAL);
+	glColorMaterial(GL_FRONT, GL_AMBIENT_AND_DIFFUSE);
+}
+
+
+int main(int argc, char** argv) {
+
+	glutInit(&argc, argv);
+	//Posicion de la ventana
+	glutInitWindowPosition(50, 50);
+	//Tamano de la ventana
+	glutInitWindowSize(width, height);
+	//Inicializa el modo de display, RGBA y Doble buffer
+	glutInitDisplayMode(GLUT_RGBA | GLUT_DOUBLE);
+	//Crear la ventana
+	glutCreateWindow("Sistema Solar");
+
+
+	//Detectar profundidad de objetos y no dibujar caras ocultas
+	glClearDepth(1.0f);
+	//Color con el que se limpian los buffers
+	glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+
+	glEnable(GL_DEPTH_TEST);
+	// Deshabilitar la vista de las caras ocultas
+	glEnable(GL_CULL_FACE);
+	//Normalizar las normales
+	glEnable(GL_NORMALIZE);
+	// Habilitamos as texturas
+	glEnable(GL_TEXTURE_2D);
+	glShadeModel(GL_SMOOTH);
+
+	inicializar_iluminacion();
+
+	//Funciones que mira el teclado
+	glutKeyboardFunc(myTeclado);
+	glutSpecialFunc(myTeclasespeciales);
+	//Funcion de dibujo
+	glutDisplayFunc(myDisplay);
+	//Funcion de actualizacion
+	glutIdleFunc(idle);
+	//Funcion de reescalado
+	glutReshapeFunc(changeSizec);
+
+	myMovimiento(1);
+	myMenu();
+	myCamara(width, height);
+
+	inicializarObxectos();
 
 	//Empieza el bucle principal
 	glutMainLoop();
