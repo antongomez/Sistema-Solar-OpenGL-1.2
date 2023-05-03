@@ -100,7 +100,7 @@ void dibujarObjeto(objeto* obj) {
 	// Debuxamos as orbitas so se estan activadas
 	if (orbitasActivadas() && (obj->distancia != 0)) {
 		// Desactivamos as texturas
-		glDisable(GL_TEXTURE_2D);
+		glBindTexture(GL_TEXTURE_2D, 0);
 
 		// Activamos a luz das orbitas
 		luz_ambiente();
@@ -117,9 +117,6 @@ void dibujarObjeto(objeto* obj) {
 		glPopMatrix();
 
 		luz_ambiente_desactivar();
-
-		// Volvemos a activar as texturas
-		glEnable(GL_TEXTURE_2D);
 	}
 
 	// Activamos a iluminacion do obxecto
